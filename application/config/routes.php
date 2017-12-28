@@ -38,7 +38,9 @@
 |
 */
 
-$route['default_controller'] = "clogin";
+$route['default_controller'] = "home";
+$route['clientes'] = 'home/verclientes';
+$route['apuestas/(:num)/(:any)'] = 'home/verapuestas/$1/$2';
 // $route['inicio'] = 'home/login';
 // $route['logout'] = 'home/logout';
 $route['404_override'] = '';

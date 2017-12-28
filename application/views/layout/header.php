@@ -40,43 +40,25 @@
   <!-- Google Font -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
-<style>
-  .mayus {
-    text-transform: uppercase;
-  }
-  .table-striped>tbody>tr:nth-of-type(odd) {
-    background-color: #BBD4EA;
-  }
-</style>
-<body class="hold-transition skin-blue sidebar-mini">
-<div class="wrapper">
+<body>
+  <div class="container">
+  <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="<?php echo base_url(); ?>">SISTEMA FIADOS</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="<?php echo base_url(); ?>clientes">Clientes</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
 
-  <header class="main-header">
-    <!-- Logo -->
-    <a href="#" class="logo">
-      <!-- logo for regular state and mobile devices -->
-      <span class="logo-lg"><b>Admin</b></span>
-    </a>
-    <!-- Header Navbar: style can be found in header.less -->
-    <nav class="navbar navbar-static-top">
-      <!-- Sidebar toggle button-->
-      <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-        <span class="sr-only">Toggle navigation</span>
-      </a>
-
-      <div class="navbar-custom-menu">
-        <ul class="nav navbar-nav">
-          <!-- User Account: style can be found in dropdown.less -->
-          <li class="dropdown user user-menu">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <img src="<?php echo base_url(); ?>assets/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
-              <span class="hidden-xs"><?php echo $this->session->userdata('s_nombreUsuario') ?></span>
-            </a>
-          </li>
-          <li>
-            <a href="<?php echo base_url(); ?>clogin/logout">Cerrar Sesion</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-  </header>
+      

@@ -45,293 +45,476 @@
 <script src="<?php echo base_url(); ?>assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
 <script>
-$(function () {
-	Date.prototype.yyyymmdd = function() {
-	  var mm = this.getMonth() + 1; // getMonth() is zero-based
-	  var dd = this.getDate();
 
-	  return [this.getFullYear()+'-',
-	          (mm>9 ? '' : '0') + mm +'-',
-	          (dd>9 ? '' : '0') + dd
-	         ].join('');
-	};
-
-	var date = new Date();
-	var fecha_actual = date.yyyymmdd();
-	$("#fecha").val(fecha_actual);
-	$('#fecha').datepicker({
-		format: 'yyyy-mm-dd',
-		autoclose: true 
-	});
-
-	$("#add_apuesta").click(function(){
-		$("#ingrese").html('');
-		var id = $("#id_apuesta").val();
-		var fecha = $("#fecha").val();
-		var jugo = $("#jugo_apuesta").val();
-		var pago = $("#pago_apuesta").val();
-		if(jugo == 0 && pago == 0){
-		$("#ingrese").append('<p>Ingrese al menos un registro</p>');
-		} else {
-			$.post("<?php echo base_url(); ?>home/guardarapuesta",
-				{
-					id: id,
-					fecha: fecha,
-					jugo: jugo,
-					pago: pago,
-					saldo: 0 
-				},
-				function(data){
-					if(data == 1){
-						$(".modal").modal('hide');
-						$("#guardareditado").hide();
-						$("#hola").html('');
-						$.post("<?php echo base_url(); ?>home/saldo",
-							{id: id},
-							function(data){
-								var c = JSON.parse(data);
-								// $("#cliente").val(' '+nombre+' '+apellido);
-								$("#saldo-total").val(c[0].saldo);
-							}
-						);
-							
-						$.post("<?php echo base_url(); ?>home/apuestas",
-							{ id: id },
-							function(data){
-								var c = JSON.parse(data);
-								$.each(c, function(i, item){
-									console.log('id ap '+item.id_ap);
-									console.log('id apuesta '+item.id_apuesta)
-									var saldo = item.saldo;
-									$("#hola").append(
-										'<tr>'+
-											'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp1'+item.id_ap+'" value="'+item.fecha+'" readonly></td>'+
-											'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp2'+item.id_ap+'" value="'+item.jugo+'" readonly></td>'+
-											'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp3'+item.id_ap+'" value="'+item.pago+'" readonly></td>'+
-											'<td>'+
-												'<a href="#" onClick="borra_id_apuesta('+item.id_ap+');" style="margin-right:5px;" class="btn btn-danger"><i class="fa fa-trash"></i></a>'+
-												'<a href="#" onClick="edita_id_apuesta('+item.id_ap+', '+item.id_apuesta+', \''+item.fecha+'\', '+item.jugo+', '+item.pago+');" class="btn btn-warning"><i class="fa fa-pencil"></i></a>'+
-											'</td>'+
-										'</tr>'
-									);
-									
-								});
-								$("#modal-saldos").modal('show');
-							}
-						);
-						
-					}
-				}
-			);
-		}
-	});
-
-	$("#btn_ver").click(function(){
-		var agencia = $("#agencia").val();
-		$("#tabla").show();
-		$('#example1').DataTable({
-			"language": {
-	            "lengthMenu": "Mostrando _MENU_ registros",
-	            "zeroRecords": "No se han encontrado registros",
-	            "info": "Mostrando _PAGE_ de _PAGES_",
-	            "infoEmpty": "No hay registros",
-	            "search": "Buscar",
-	            "paginate": {
-			      	"previous": "Anterior",
-			      	"next": "Siguiente"
-			    }
-	        },
-			'paging': true,
-			'info': true,
-			'filter': true,
-			'stateSave': true,
-			'bDestroy': true,
-			'ajax': {
-				'url': '<?php echo base_url(); ?>home/getClientes/'+agencia,
-				'type': 'POST',
-				dataSrc: ''
-			},
-			'columns': [
-				{data: 'id_cliente'},
-				{data: 'nombre', 'sClass': 'mayus'},
-				{data: 'apellido', 'sClass': 'mayus'},
-				{data: 'telefono'},
-				{'orderable': true,
-					render:function(data, type, row){
-						return 	'<a href="#" style="margin-right:5px;" onClick="id_cliente(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\')" class="btn btn-success" data-target="#modal-saldos" data-toggle="modal"><i class="fa fa-search"></i></a>'+
-								'<a href="#" style="margin-right:5px;" onClick="id_apuesta(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\')" data-target="#modal-addapuesta" data-toggle="modal" class="btn btn-primary"><i class="fa fa-plus"></i></a>'+
-								'<a href="#" style="margin-right:5px;" onClick="delCliente(\''+row.id_cliente+'\')" class="btn btn-danger" data-target="#modal-delete" data-toggle="modal"><i class="fa fa-trash"></i></a>'+
-								'<a href="#" style="margin-right:5px;" onClick="editPersona(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\',\''+row.telefono+'\')" class="btn btn-warning" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-pencil"></i></a>'
-					}
-				}
-			],
-			"order": [[ 0, "asc" ]],
-		});
-	});
-
-	selPersona = function(id, nombre, apellido, telefono){
-		$("#id_del_cliente").val(id);
-		$("#nombre").val(nombre);
-		$("#apellido").val(apellido);
-		$("#telefono").val(telefono);
-	}
-
-	delCliente = function(id){
-		$("#id_cliente_delete").val(id);
-	};
-
-	id_apuesta = function(id, nombre, apellido){
-		console.log('holaa id '+id);
-		$("#id_apuesta").val(id);
-		$('#jugo_apuesta').click(function(){
-			$(this).select();	
-		});
-		$("#jugo_apuesta").val(0);
-		$('#pago_apuesta').click(function(){
-			$(this).select();	
-		});
-		$("#pago_apuesta").val(0);
-		$("#cliente").val(nombre+' '+apellido);
-	}
-
-	id_cliente = function(id, nombre, apellido){
-		$("#guardareditado").hide();
-		$("#hola").html('');
-		$.post("<?php echo base_url(); ?>home/saldo",
-			{id: id},
-			function(data){
-				var c = JSON.parse(data);
-				$("#cliente").val(' '+nombre+' '+apellido);
-				$("#saldo-total").val(c[0].saldo);
-			}
-		);
-			
-		$.post("<?php echo base_url(); ?>home/apuestas",
-			{ id: id },
-			function(data){
-				var c = JSON.parse(data);
-				$.each(c, function(i, item){
-					var saldo = item.saldo;
-					$("#hola").append(
-						'<tr>'+
-							'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp1'+item.id_ap+'" value="'+item.fecha+'" readonly></td>'+
-							'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp2'+item.id_ap+'" value="'+item.jugo+'" readonly></td>'+
-							'<td><input style="background-color: transparent; border: none;" class="inp'+item.id_ap+' form-control" id="inp3'+item.id_ap+'" value="'+item.pago+'" readonly></td>'+
-							'<td>'+
-								'<a href="#" onClick="borra_id_apuesta('+item.id_ap+');" style="margin-right:5px;" class="btn btn-danger"><i class="fa fa-trash"></i></a>'+
-								'<a href="#" onClick="edita_id_apuesta('+item.id_ap+', '+item.id_apuesta+', \''+item.fecha+'\', '+item.jugo+', '+item.pago+');" class="btn btn-warning"><i class="fa fa-pencil"></i></a>'+
-							'</td>'+
-						'</tr>'
-					);
-					
-				});
-			}
-		);
-	}
-
-	borra_id_apuesta = function(id){
-		$.post("<?php echo base_url(); ?>home/borra_id_apuesta",
-			{ id: id },
-			function(data){
-				if(data == 1){
-					$(".modal").modal('hide');
-				}
-			}
-		)
-	}
-
-	edita_id_apuesta = function(id_ap, id_apuesta, fecha, jugo, pago){
-
-		$("#stack1").modal('show');
-		$("#id_de_la_ap").val(id_ap);
-		$("#id_de_la_apuesta").val(id_apuesta);
-		$("#editfecha").val(fecha);
-		$("#editjugo").val(jugo);
-		$("#editpago").val(pago);
-
-		$("#guardar_apuesta_editada").click(function(){
-			var id_ap = $("#id_de_la_ap").val();
-			var id_apuesta = $("#id_de_la_apuesta").val();
-			var fecha = $("#editfecha").val();
-			fecha = fecha.substring(6, 10) + '-' + fecha.substring(3, 5) + '-' + fecha.substring(0, 2);
-			var jugo = $("#editjugo").val();
-			var pago = $("#editpago").val();
-
-			$.post("<?php echo base_url(); ?>home/edita_id_apuesta",
-				{ 
-					id_ap: id_ap,
-					id_apuesta: id_apuesta,
-					fecha: fecha,
-					jugo: jugo,
-					pago: pago
-				},
-				function(data){
-					if(data == 1){
-						$(".modal").modal('hide');
-						$("#stack1").modal('hide');
-					}
-				}
-			)
-		});
-	}
-
-	// LISTO
-	editPersona = function(id, nombre, apellido, telefono){
-		$("#id_del_cliente").val(id);
-		$("#editnombre").val(nombre);
-		$("#editapellido").val(apellido);
-		$("#edittelefono").val(telefono);
-	}
-
-	// FALTA HACER
-	saldoCliente = function(nombre, apellido){
-		$("#cliente").html(' '+nombre+' '+apellido);
-	}
-
-
-
-	// LISTO
-	$("#btn-borrar-cliente").click(function(){
-		var id = $("#id_cliente_delete").val();
-		$.post("<?php echo base_url(); ?>home/delete",
-			{ id: id },
-			function(data){
-				if (data == 1){
-					$.post("<?php echo base_url(); ?>home/deleteapuesta",
-					{ id: id },	
-					function(data){
-						if (data == 1){
-							$('#example1').DataTable().ajax.reload();
-						}
-					});
-				}
-			}
-		);
-	});
-
-	// LISTO
-	$('#btn-editcliente').click(function(){
-		var id = $("#id_del_cliente").val();
-		var nombre = $('#editnombre').val();
-		var apellido = $('#editapellido').val();
-		var telefono = $('#edittelefono').val();
-		$.post("<?php echo base_url(); ?>home/editarcliente",	
-		{
-			id: id,
-			nombre: nombre,
-			apellido: apellido,
-			telefono: telefono
-		},			
-		function(data){
-			if (data == 1) {
-				$(".modal").modal('hide');
-				$('#example1').DataTable().ajax.reload();
-			}
-		});
-	});
+$( document ).ready(function() {
+    $.post('<?php echo base_url(); ?>home/getSaldoTodaslasAgencias',
+        function(data){
+            var c = JSON.parse(data);
+            var saldoAllAgencias = c[0].saldoTotalAgencias;
+            if(saldoAllAgencias != null){
+                $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
+            } else {
+                alert('no');
+            }
+        });
+    $("#saldoAgencia").val('');
+    $("#tdAgencias").hide();
+    $("#saldoAgencia").hide();
+    $('#tabla-clientes').DataTable({
+        "language": {
+            "lengthMenu": "Mostrando _MENU_ registros",
+            "zeroRecords": "No se han encontrado registros",
+            "info": "Mostrando _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay registros",
+            "search": "Buscar",
+            "paginate": {
+                "previous": "Anterior",
+                "next": "Siguiente"
+            }
+        },
+        'paging': true,
+        'info': true,
+        'filter': true,
+        'stateSave': true,
+        'bDestroy': true,
+        'ajax': {
+            'url': '<?php echo base_url(); ?>home/getAllClientes',
+            'type': 'POST',
+            dataSrc: ''
+        },
+        'columns': [
+            {data: 'id_cliente'},
+            {data: 'nombre', 'sClass': 'mayus'},
+            {data: 'apellido', 'sClass': 'mayus'},
+            {data: 'telefono'},
+            {data: 'agencia'},
+            {data: 'saldo'},
+            {data: 'ultimafecha'},
+            {'orderable': true,
+                render:function(data, type, row){
+                    return '<a href="<?php echo base_url(); ?>apuestas/'+row.id_cliente+'/'+row.agencia+'" style="margin-right:5px;" class="btn btn-success"><i class="fa fa-search"></i></a>'+
+                           '<a onclick="borrar_cliente('+row.id_cliente+')" style="margin-right:5px;" class="btn btn-danger"><i class="fa fa-trash"></i></a>'+
+                           '<a onClick="editarcliente(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\',\''+row.telefono+'\')" data-target="#modal-edit" data-toggle="modal" style="margin-right:5px;" class="btn btn-warning"><i class="fa fa-pencil"></i></a>';
+                }
+            }
+        ],
+        "order": [[ 0, "asc" ]],
+    });
 });
-	
 
+$(function () {
+
+    // CLIENTES
+    $("#btnFiltrarClientes").click(function(){
+        $("#tdTodaslasAgencias").show();
+        $("#saldotodaslasAgencias").show(); 
+        $("#tdAgencias").hide();
+        $("#saldoAgencia").hide();
+        var agencia = $("#agencia").val();
+        if(agencia == 0){
+            $.post('<?php echo base_url(); ?>home/getSaldoTodaslasAgencias',
+                function(data){
+                    var c = JSON.parse(data);
+                    var saldoAllAgencias = c[0].saldoTotalAgencias;
+                    if(saldoAllAgencias != null){
+                        $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
+                    } else {
+                        alert('no');
+                    }
+                });
+            $('#tabla-clientes').DataTable({
+                "language": {
+                    "lengthMenu": "Mostrando _MENU_ registros",
+                    "zeroRecords": "No se han encontrado registros",
+                    "info": "Mostrando _PAGE_ de _PAGES_",
+                    "infoEmpty": "No hay registros",
+                    "search": "Buscar",
+                    "paginate": {
+                        "previous": "Anterior",
+                        "next": "Siguiente"
+                    }
+                },
+                'paging': true,
+                'info': true,
+                'filter': true,
+                'stateSave': true,
+                'bDestroy': true,
+                'ajax': {
+                    'url': '<?php echo base_url(); ?>home/getAllClientes',
+                    'type': 'POST',
+                    dataSrc: ''
+                },
+                'columns': [
+                    {data: 'id_cliente'},
+                    {data: 'nombre', 'sClass': 'mayus'},
+                    {data: 'apellido', 'sClass': 'mayus'},
+                    {data: 'telefono'},
+                    {data: 'agencia'},
+                    {data: 'saldo'},
+                    {data: 'ultimafecha'},
+                    {'orderable': true,
+                        render:function(data, type, row){
+                            return '<a href="<?php echo base_url(); ?>apuestas/'+row.id_cliente+'/'+row.agencia+'" style="margin-right:5px;" class="btn btn-success"><i class="fa fa-search"></i></a>'+
+                                   '<a onclick="borrar_cliente('+row.id_cliente+')" style="margin-right:5px;" class="btn btn-danger"><i class="fa fa-trash"></i></a>'+
+                                   '<a onClick="editarcliente(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\',\''+row.telefono+'\')" data-target="#modal-edit" data-toggle="modal" style="margin-right:5px;" class="btn btn-warning"><i class="fa fa-pencil"></i></a>';
+                        }
+                    }
+                ],
+                "order": [[ 0, "asc" ]],
+            });
+        } else {
+            $("#tdTodaslasAgencias").hide();
+            $("#saldotodaslasAgencias").hide();
+            $("#saldotodaslasAgencias").val('');
+            $("#saldoAgencia").val('');
+            $("#tdAgencias").show();
+            $("#saldoAgencia").show();
+            $.post('<?php echo base_url(); ?>home/getSaldoTotalAgencia',
+            {
+                agencia: agencia
+            },
+            function(data){
+                var c = JSON.parse(data);
+                var saldoTotal = c[0].saldoAgencia;
+                if(saldoTotal != null){
+                    $("#saldoAgencia").val('$ '+saldoTotal);    
+                } else {
+                    $("#saldoAgencia").val('$ '+0);
+                }
+            });
+            $('#tabla-clientes').DataTable({
+                "language": {
+                    "lengthMenu": "Mostrando _MENU_ registros",
+                    "zeroRecords": "No se han encontrado registros",
+                    "info": "Mostrando _PAGE_ de _PAGES_",
+                    "infoEmpty": "No hay registros",
+                    "search": "Buscar",
+                    "paginate": {
+                        "previous": "Anterior",
+                        "next": "Siguiente"
+                    }
+                },
+                'paging': true,
+                'info': true,
+                'filter': true,
+                'stateSave': true,
+                'bDestroy': true,
+                'ajax': {
+                    'url': '<?php echo base_url(); ?>home/getClientesByAgencia/'+agencia,
+                    'type': 'POST',
+                    dataSrc: ''
+                },
+                'columns': [
+                    {data: 'id_cliente'},
+                    {data: 'nombre', 'sClass': 'mayus'},
+                    {data: 'apellido', 'sClass': 'mayus'},
+                    {data: 'telefono'},
+                    {data: 'agencia'},
+                    {data: 'saldo'},
+                    {data: 'ultimafecha'},
+                    {'orderable': true,
+                        render:function(data, type, row){
+                            return '<a href="<?php echo base_url(); ?>apuestas/'+row.id_cliente+'/'+row.agencia+'" style="margin-right:5px;" class="btn btn-success"><i class="fa fa-search"></i></a>'+
+                                   '<a onclick="borrar_cliente('+row.id_cliente+')" style="margin-right:5px;" class="btn btn-danger"><i class="fa fa-trash"></i></a>'+
+                                   '<a onClick="editarcliente(\''+row.id_cliente+'\',\''+row.nombre+'\',\''+row.apellido+'\',\''+row.telefono+'\')" data-target="#modal-edit" data-toggle="modal" style="margin-right:5px;" class="btn btn-warning"><i class="fa fa-pencil"></i></a>';
+                        }
+                    }
+                ],
+                "order": [[ 0, "asc" ]],
+            });
+        }
+    });
+
+    $("#btnsubmitcliente").click(function(){
+        var agencia = $("#addagencia").val();
+        var nombre = $("#addnombre").val();
+        var apellido = $("#addapellido").val();
+        var telefono = $("#addtelefono").val();
+        $.post('<?php echo base_url(); ?>home/agregarcliente',
+        {
+            agencia : agencia,
+            nombre: nombre,
+            apellido: apellido,
+            telefono: telefono
+        },
+        function(data){
+            if(data == 1){
+                location.reload();
+            }
+        });
+    });
+
+    borrar_cliente = function(id){
+        var r = confirm("Esta seguro que desea eliminar este cliente?");
+        if (r == true) {
+            $.post('<?php echo base_url(); ?>home/delete',
+            {
+                id: id     
+            },
+            function(data){
+                if(data == 1){
+                    $.post("<?php echo base_url(); ?>home/deleteapuesta",
+                    { id: id }, 
+                    function(data){
+                        if (data == 1){
+                            $('#tabla-clientes').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    // APUESTAS
+    
+    $("#apuesta_desde").datepicker({format: 'dd-mm-yyyy'});
+    $("#apuesta_hasta").datepicker({format: 'dd-mm-yyyy'});
+    $("#fechadeapuesta").datepicker({format: 'dd-mm-yyyy'});
+    $("#add_apuesta").click(function(){
+        $("#ingrese").html('');
+        var id = $("#idclienteapuestas").val();
+        console.log('id: '+id);
+        var fecha = $("#fechadeapuesta").val();
+        fecha = fecha.substring(6, 10) + '-' + fecha.substring(3, 5) + '-' + fecha.substring(0, 2);
+        console.log('fecha: '+fecha);
+        var jugo = $("#jugo_apuesta").val();
+        console.log('jugo: '+jugo);
+        var pago = $("#pago_apuesta").val();
+        console.log('pago: '+pago);
+        var agencia = $("#agencia_cliente").val();
+        console.log('agencia: '+agencia);
+        if(jugo == 0 && pago == 0){
+            $("#ingrese").append('<p>Ingrese al menos un registro</p>');
+        } else {
+            $.post("<?php echo base_url(); ?>home/guardarapuesta",
+                {
+                    id: id,
+                    fecha: fecha,
+                    jugo: jugo,
+                    pago: pago,
+                    agencia: agencia
+                },
+                function(data){
+                    if(data == 1){
+                        location.reload();
+                    }
+                }
+            );
+        }
+    });
+
+    $("#apuestas").change(function(){
+        var apuesta = $("#apuestas").val();
+        if(apuesta == 1){
+            $(".tdFechas").show();
+        } else {
+            $(".tdFechas").css('display','none');
+        }
+    });
+
+    $("#btnFiltrarApuestas").click(function(){
+        $("#tbodyapuestas").html('');
+        var apuesta = $("#apuestas").val();
+        var id = $("#idclienteapuestas").val();
+        if(apuesta == 0){
+            $("#btnPrintAll").show();
+            $.post('<?php echo base_url(); ?>home/getAllApuestas',
+                {
+                    id: id
+                },
+                function(data){
+                    var c = JSON.parse(data);
+                    if(c.apuestas.length != 0){
+                        var apuestas = c.apuestas;
+                        var jugo1 = apuestas[0].jugo;
+                        var pago1 = apuestas[0].pago;
+                        var primersaldo = jugo1 - pago1;
+                        console.log(primersaldo);
+                        $.each(apuestas, function(i, item){
+                            var fecha = item.fecha;
+                                fecha = fecha.substring(8,10) + '-' + fecha.substring(5,7) + '-' + fecha.substring(0,4);
+                            $("#tbodyapuestas").append(
+                                '<tr class="teerre">'+
+                                    '<td class="to-print">'+fecha+'</td>'+
+                                    '<td class="debe to-print">'+item.jugo+'</td>'+
+                                    '<td class="haber to-print">'+item.pago+'</td>'+
+                                    '<td class="saldo to-print"></td>'+
+                                    '<td class="no-print">'+
+                                        '<button onclick="borrar_apuesta('+item.id_ap+');" style="margin-right: 10px;" type="button" class="btn btn-danger">'+
+                                            '<i class="glyphicon glyphicon-trash"></i>'+
+                                        '</button>'+
+                                        '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
+                                            '<i class="glyphicon glyphicon-pencil"></i>'+
+                                        '</button>'+
+                                    '</td>'+
+                                '</tr>'
+                            );
+
+                            if (i == 0){
+                                $("#tbodyapuestas > tr:nth-child(1) > td:nth-child(4)").html(primersaldo);
+                            } else {
+                                var debe = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(2)").text();
+                                var haber = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(3)").text();
+                                debe = parseFloat(debe);
+                                haber = parseFloat(haber);
+                                saldo = debe - haber;
+                                var saldo_ant = $("#tbodyapuestas > tr:nth-child("+i+") > td:nth-child(4)").text();
+                                saldo = parseFloat(saldo_ant) + saldo;
+                                $('#tbodyapuestas > tr:nth-child('+(i+1)+') > td:nth-child(4)').html(saldo);
+                            }
+                        });
+                    } else {
+                        alert('no hay data papa');
+                    }
+                });
+        } else {
+            // por fecha
+            var desde = $("#apuesta_desde").val();
+            var hasta = $("#apuesta_hasta").val();
+            desde = desde.substring(6,10) + '-' + desde.substring(3,5) + '-' + desde.substring(0,2);
+            hasta = hasta.substring(6,10) + '-' + hasta.substring(3,5) + '-' + hasta.substring(0,2);
+            $.post('<?php echo base_url(); ?>home/getApuestasByFecha',
+                {
+                    id: id,
+                    desde: desde,
+                    hasta: hasta
+                },
+                function(data){
+                    var c = JSON.parse(data);
+                    if(c.apuestas.length != 0){
+                        var primersaldo = c.primersaldo[0].saldo;
+                        if(primersaldo == 'null'){
+                            primersaldo = 0;
+                        }
+                        var apuestas = c.apuestas;
+                        $.each(apuestas, function(i, item){
+                            var fecha = item.fecha;
+                                fecha = fecha.substring(8,10) + '-' + fecha.substring(5,7) + '-' + fecha.substring(0,4);
+
+                            $("#tbodyapuestas").append(
+                                '<tr class="teerre">'+
+                                    '<td class="to-print">'+fecha+'</td>'+
+                                    '<td class="debe to-print">'+item.jugo+'</td>'+
+                                    '<td class="haber to-print">'+item.pago+'</td>'+
+                                    '<td class="saldo to-print"></td>'+
+                                    '<td class="no-print">'+
+                                        '<button onclick="borrar_apuesta('+item.id_ap+', '+item.id_apuesta+');" style="margin-right: 10px;" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i></button>'+
+                                        '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-pencil"></i></button>'+
+                                    '</td>'+
+                                '</tr>'
+                            );
+
+                            if (i == 0){
+                                var debe = $("#tbodyapuestas > tr:nth-child(1) > td:nth-child(2)").text();
+                                var haber = $("#tbodyapuestas > tr:nth-child(1) > td:nth-child(3)").text();
+                                debe = parseFloat(debe);
+                                haber = parseFloat(haber);
+                                saldo = debe - haber;
+                                saldo = saldo + parseFloat(primersaldo);
+                                $("#tbodyapuestas > tr:nth-child(1) > td:nth-child(4)").html(saldo);
+                            } else {
+                                var debe = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(2)").text();
+                                var haber = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(3)").text();
+                                debe = parseFloat(debe);
+                                haber = parseFloat(haber);
+                                saldo = debe - haber;
+                                var saldo_ant = $("#tbodyapuestas > tr:nth-child("+i+") > td:nth-child(4)").text();
+                                saldo = parseFloat(saldo_ant) + saldo;
+                                $('#tbodyapuestas > tr:nth-child('+(i+1)+') > td:nth-child(4)').html(saldo);
+                            }
+                        });
+                    } else {
+                        alert('no hay mas');
+                    }
+                });
+        }
+    });
+
+    var desde = $("#apuesta_desde").val();
+    var hasta = $("#apuesta_hasta").val();
+    // FUNCION PARA IMPRIMIR
+    printDivAll = function() {
+        var desde = $("#apuesta_desde").val();
+        var hasta = $("#apuesta_hasta").val();
+        if(desde != '' && hasta != ''){
+            var nombrePrint = $("#nombresPrint").text();
+            nombrePrint = nombrePrint.toUpperCase();
+            var agenciaPrint = $("#nro_agencia").val();
+
+            var divToPrint=document.getElementById('DivIdToPrint');
+
+            var newWin=window.open('','Print-Window');
+
+            newWin.document.open();
+
+            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h1 style="text-align: center;">Cliente: '+nombrePrint+'</h1><p style="text-align:center;">Agencia: '+agenciaPrint+'</p><h1 style="text-align: justify;">Consulta de Apuestas desde '+desde+' hasta '+hasta+'</h1>'+divToPrint.innerHTML+'</body></html>');
+
+            newWin.document.close();
+
+            setTimeout(function(){newWin.close();},10);
+        } else {
+            var nombrePrint = $("#nombresPrint").text();
+            nombrePrint = nombrePrint.toUpperCase();
+            var agenciaPrint = $("#nro_agencia").val();
+
+            var divToPrint=document.getElementById('DivIdToPrint');
+
+            var newWin=window.open('','Print-Window');
+
+            newWin.document.open();
+
+            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h1 style="text-align: center;">Cliente: '+nombrePrint+'</h1><p style="text-align:center;">Agencia: '+agenciaPrint+'</p>'+divToPrint.innerHTML+'</body></html>');
+
+            newWin.document.close();
+
+            setTimeout(function(){newWin.close();},10);
+        }
+    }
+
+    // FUNCION PARA BORRAR APUESTA
+    borrar_apuesta = function(id, id_apuesta){
+        $.post('<?php echo base_url(); ?>home/borrar_apuesta',
+            {
+                id: id
+            },
+            function(data){
+                if(data == 1){
+                    $("#tbodyapuestas").html('');
+                    alert('Se borro la apuesta con exito');
+                } else {
+                    alert('Hubo error');
+                }
+            }
+        );
+    }
+
+    editarcliente = function(id, nombre, apellido, telefono){
+        $("#id_del_cliente").val(id);
+        $("#editnombre").val(nombre);
+        $("#editapellido").val(apellido);
+        $("#edittelefono").val(telefono);
+    }  
+
+    $('#btn-editcliente').click(function(){
+        var id = $("#id_del_cliente").val();
+        var nombre = $('#editnombre').val();
+        var apellido = $('#editapellido').val();
+        var telefono = $('#edittelefono').val();
+        $.post("<?php echo base_url(); ?>home/editarcliente",   
+        {
+            id: id,
+            nombre: nombre,
+            apellido: apellido,
+            telefono: telefono
+        },          
+        function(data){
+            if (data == 1) {
+                $(".modal").modal('hide');
+                $('#tabla-clientes').DataTable().ajax.reload();
+            }
+        });
+    });
+});
 
 </script>
 </body>

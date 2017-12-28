@@ -19,21 +19,15 @@ class Mapuestas extends CI_Model {
         return $s->result();
     }
 
-    public function saveApuesta($id, $fecha, $jugo, $pago){
+    public function saveApuesta($id, $fecha, $jugo, $pago, $agencia){
         $campos = array(
-            // 'id_ap' => $id_ap,
             'id_apuesta' => $id,
             'fecha' => $fecha,
             'jugo' => $jugo,
-            'pago' => $pago
+            'pago' => $pago,
+            'agencia' => $agencia
         );
         $this->db->insert('apuestas', $campos);
-        return 1;
-    }
-
-    public function borrarapuestas($id){
-        $this->db->where('id_apuesta', $id);
-        $this->db->delete('apuestas');
         return 1;
     }
 
@@ -52,6 +46,12 @@ class Mapuestas extends CI_Model {
         );
         $this->db->where('id_ap',$id_ap);
         $this->db->update('apuestas',$campos);
+        return 1;
+    }
+
+    public function borrarapuestas($id){
+        $this->db->where('id_apuesta', $id);
+        $this->db->delete('apuestas');
         return 1;
     }
     // public function getAgencia($suc) {
