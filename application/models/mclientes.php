@@ -10,7 +10,7 @@ class Mclientes extends CI_Model {
     }
 
     public function getClientesByAgencia($agencia){
-        $query = $this->db->query('SELECT id_cliente, nombre, apellido, telefono, agencia, ifnull((select sum(jugo) - sum(pago) from apuestas where id_apuesta = (select DISTINCT id_cliente) and agencia = "'.$agencia.'"), "0") as saldo FROM clientes where agencia = "'.$agencia.'"');
+        $query = $this->db->query('SELECT id_cliente, nombre, apellido, telefono, agencia, ifnull((select sum(jugo) - sum(pago) from apuestas where id_apuesta = (select DISTINCT id_cliente) and agencia = "'.$agencia.'"), "0") as saldo, (SELECT DATE_FORMAT(fecha, "%d-%m-%Y") FROM apuestas where id_apuesta = (select DISTINCT id_cliente) ORDER BY fecha DESC LIMIT 1) as ultimafecha FROM clientes where agencia = "'.$agencia.'"');
         return $query->result_array();
     }
 

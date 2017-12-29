@@ -53,8 +53,6 @@ $( document ).ready(function() {
             var saldoAllAgencias = c[0].saldoTotalAgencias;
             if(saldoAllAgencias != null){
                 $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
-            } else {
-                alert('no');
             }
         });
     $("#saldoAgencia").val('');
@@ -364,7 +362,7 @@ $(function () {
                             }
                         });
                     } else {
-                        alert('no hay data papa');
+                        alert('no hay registros para este cliente');
                     }
                 });
         } else {
@@ -473,19 +471,69 @@ $(function () {
 
     // FUNCION PARA BORRAR APUESTA
     borrar_apuesta = function(id, id_apuesta){
-        $.post('<?php echo base_url(); ?>home/borrar_apuesta',
-            {
-                id: id
-            },
-            function(data){
-                if(data == 1){
-                    $("#tbodyapuestas").html('');
-                    alert('Se borro la apuesta con exito');
-                } else {
-                    alert('Hubo error');
+        var r = confirm("Esta seguro que desea eliminar esta apuesta?");
+        if(r == true){
+            $.post('<?php echo base_url(); ?>home/borrar_apuesta',
+                {
+                    id: id
+                },
+                function(data){
+                    if(data == 1){
+                        $("#tbodyapuestas").html('');
+                        alert('Se borro la apuesta con exito');
+                        var id = $("#idclienteapuestas").val();
+                        $.post('<?php echo base_url(); ?>home/getAllApuestas',
+                        {
+                            id: id
+                        },
+                        function(data){
+                            var c = JSON.parse(data);
+                            if(c.apuestas.length != 0){
+                                var apuestas = c.apuestas;
+                                var jugo1 = apuestas[0].jugo;
+                                var pago1 = apuestas[0].pago;
+                                var primersaldo = jugo1 - pago1;
+                                $.each(apuestas, function(i, item){
+                                    var fecha = item.fecha;
+                                        fecha = fecha.substring(8,10) + '-' + fecha.substring(5,7) + '-' + fecha.substring(0,4);
+                                    $("#tbodyapuestas").append(
+                                        '<tr class="teerre">'+
+                                            '<td class="to-print">'+fecha+'</td>'+
+                                            '<td class="debe to-print">'+item.jugo+'</td>'+
+                                            '<td class="haber to-print">'+item.pago+'</td>'+
+                                            '<td class="saldo to-print"></td>'+
+                                            '<td class="no-print">'+
+                                                '<button onclick="borrar_apuesta('+item.id_ap+');" style="margin-right: 10px;" type="button" class="btn btn-danger">'+
+                                                    '<i class="glyphicon glyphicon-trash"></i>'+
+                                                '</button>'+
+                                                '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
+                                                    '<i class="glyphicon glyphicon-pencil"></i>'+
+                                                '</button>'+
+                                            '</td>'+
+                                        '</tr>'
+                                    );
+
+                                    if (i == 0){
+                                        $("#tbodyapuestas > tr:nth-child(1) > td:nth-child(4)").html(primersaldo);
+                                    } else {
+                                        var debe = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(2)").text();
+                                        var haber = $("#tbodyapuestas > tr:nth-child("+(i+1)+") > td:nth-child(3)").text();
+                                        debe = parseFloat(debe);
+                                        haber = parseFloat(haber);
+                                        saldo = debe - haber;
+                                        var saldo_ant = $("#tbodyapuestas > tr:nth-child("+i+") > td:nth-child(4)").text();
+                                        saldo = parseFloat(saldo_ant) + saldo;
+                                        $('#tbodyapuestas > tr:nth-child('+(i+1)+') > td:nth-child(4)').html(saldo);
+                                    }
+                                });
+                            } else {
+                                alert('no hay registros para este cliente');
+                            }
+                        });
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     editarcliente = function(id, nombre, apellido, telefono){

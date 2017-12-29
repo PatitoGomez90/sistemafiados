@@ -158,7 +158,7 @@
                 }
             });
         } else {
-            alert('no hay data papa');
+            alert('no hay registros para este cliente');
         }
     });
   });
