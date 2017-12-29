@@ -18,12 +18,15 @@
                 </select>
               </td>
               <td><button type="button" class="btn btn-primary" id="btnFiltrarClientes"><i class="glyphicon glyphicon-search"></i></button></td>
-              <td class="pull-right"  style="margin-left: 10px;">
+              <td class="pull-right"  style="margin-left: 10px; margin-right: 10px;">
                 <div class="pull-right">
                   <button type="button" class="btn btn-success" id="btnAddCliente" data-target="#modal-add-cliente" data-toggle="modal">Agregar Cliente</button>
                 </div>  
               </td>
-              <td style="width: 300px;"></td>
+              <td>
+                <div id="divimprimir"></div>
+              </td>
+              <td style="width: 180px;"></td>
               <td><span style="margin-right: 5px;" id="tdAgencias"><strong>Saldo de la Agencia</strong></span></td>
               <td><input type="text" class="form-control" id="saldoAgencia"></input></td>
               <td><span style="margin-right: 5px;" id="tdTodaslasAgencias"><strong>Saldo de todas las Agencias</strong></span></td>

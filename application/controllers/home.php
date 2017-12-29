@@ -113,6 +113,15 @@ class Home extends CI_Controller {
 		echo $this->mclientes->actualizarcliente($param);
 	}
 
+	public function saveApuestaEditada(){
+		$id = $this->input->post('id');
+		$fecha = $this->input->post('fecha');
+		$jugo = $this->input->post('jugo');
+		$pago = $this->input->post('pago');
+		$res = $this->mapuestas->editaidapuesta($id, $fecha, $jugo, $pago);
+		echo $res;
+	}
+
 	// public function getFirstSaldo(){
 	// 	$id = $this->input->post('id');
 	// 	$primersaldo = $this->mclientes->getFirstSaldo($id);

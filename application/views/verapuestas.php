@@ -109,6 +109,50 @@
   </div>
 </div>
 
+<div class="modal fade bd-example-modal-lg" id="modal-edit-apuesta">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Editar apuesta</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <div class="container">
+            <div class="row">
+              <input hidden id="id_apuesta_edit">
+              <div class="col-md-2" style="margin-right: 10px;">
+                <div class="form-group">
+                  <label>Fecha</label>
+                  <input type="text" id="editfechadeapuesta" class="form-control"></input>
+                </div>
+              </div>
+              <div class="col-md-2" style="margin-right: 10px;">
+                <div class="form-group">
+                  <label>Jugo</label>
+                  <input id="editjugo_apuesta" type="text" class="form-control"></input>
+                </div>
+              </div>
+              <div class="col-md-2" style="margin-right: 10px;">
+                <div class="form-group">
+                  <label>Pago</label>
+                  <input id="editpago_apuesta" type="text" class="form-control"></input>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <div id="ingrese"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cerrar</button>
+        <button type="button" id="btn_editar_apuesta" class="btn btn-primary pull-right">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
 <script>
   $( document ).ready(function() {
@@ -137,7 +181,7 @@
                             '<button onclick="borrar_apuesta('+item.id_ap+');" style="margin-right: 10px;" type="button" class="btn btn-danger">'+
                                 '<i class="glyphicon glyphicon-trash"></i>'+
                             '</button>'+
-                            '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
+                            '<button onclick="editar_apuesta('+item.id_ap+', \''+fecha+'\', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
                                 '<i class="glyphicon glyphicon-pencil"></i>'+
                             '</button>'+
                         '</td>'+
@@ -157,9 +201,55 @@
                     $('#tbodyapuestas > tr:nth-child('+(i+1)+') > td:nth-child(4)').html(saldo);
                 }
             });
-        } else {
-            alert('no hay registros para este cliente');
         }
     });
+    editar_apuesta = function(id, fecha, jugo, pago){
+      $("#modal-edit-apuesta").modal('show');
+      $("#id_apuesta_edit").val(id);
+      $("#editfechadeapuesta").val(fecha);
+      $("#editjugo_apuesta").val(jugo);
+      $("#editpago_apuesta").val(pago);
+    }
+
+    $("#btn_editar_apuesta").click(function(){
+      var id_cliente = $("#id_apuesta_edit").val();
+      var fecha = $("#editfechadeapuesta").val();
+      fecha = fecha.substring(6,10) + '-' + fecha.substring(3,5) + '-' + fecha.substring(0,2);
+      var jugo = $("#editjugo_apuesta").val();
+      var pago = $("#editpago_apuesta").val();
+      $.post('<?php echo base_url(); ?>home/saveApuestaEditada',
+      {
+        id: id_cliente,
+        fecha: fecha,
+        jugo: jugo,
+        pago: pago
+      },
+      function(data){
+        if(data == 1){
+
+          location.reload();
+        }
+      });
+    });
+  });
+
+  $("#btnAgregarApuestas").click(function(){
+    var date = new Date();
+    var dia = date.getDate();
+    if(dia < 10){
+      dia = '0'+dia
+    }
+    var mes = date.getMonth() + 1;
+    if(mes < 10){
+      mes = '0'+mes
+    }
+    if(mes > 12){
+      mes = '01';
+    }
+    var year = date.getFullYear();
+    var fecha = dia + '-' + mes + '-' + year;
+    $("#fechadeapuesta").val(fecha);
+    $("#jugo_apuesta").val(0);
+    $("#pago_apuesta").val(0);
   });
 </script>

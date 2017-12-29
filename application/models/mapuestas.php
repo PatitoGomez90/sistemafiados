@@ -37,9 +37,8 @@ class Mapuestas extends CI_Model {
         return 1;
     }
 
-    public function editaidapuesta($id_ap, $id_apuesta, $fecha, $jugo, $pago){
+    public function editaidapuesta($id_ap, $fecha, $jugo, $pago){
         $campos = array(
-            'id_apuesta' => $id_apuesta,
             'fecha' => $fecha,
             'jugo' => $jugo,
             'pago' => $pago

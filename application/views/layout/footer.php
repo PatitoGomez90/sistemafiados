@@ -7,43 +7,18 @@
 <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
 <!-- jQuery UI 1.11.4 -->
 <script src="<?php echo base_url(); ?>assets/bower_components/jquery-ui/jquery-ui.min.js"></script>
-<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-<script>
-  $.widget.bridge('uibutton', $.ui.button);
-</script>
 <!-- Bootstrap 3.3.7 -->
 <script src="<?php echo base_url(); ?>assets/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<!-- Morris.js charts -->
-<script src="<?php echo base_url(); ?>assets/bower_components/raphael/raphael.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/bower_components/morris.js/morris.min.js"></script>
-<!-- Sparkline -->
-<script src="<?php echo base_url(); ?>assets/bower_components/jquery-sparkline/dist/jquery.sparkline.min.js"></script>
-<!-- jvectormap -->
-<script src="<?php echo base_url(); ?>assets/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
 <!-- jQuery Knob Chart -->
 <script src="<?php echo base_url(); ?>assets/bower_components/jquery-knob/dist/jquery.knob.min.js"></script>
-<!-- daterangepicker -->
-<script src="<?php echo base_url(); ?>assets/bower_components/moment/min/moment.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
 <!-- datepicker -->
 <script src="<?php echo base_url(); ?>assets/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
-<!-- Bootstrap WYSIHTML5 -->
-<script src="<?php echo base_url(); ?>assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
-<!-- Slimscroll -->
-<script src="<?php echo base_url(); ?>assets/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
-<!-- FastClick -->
-<script src="<?php echo base_url(); ?>assets/bower_components/fastclick/lib/fastclick.js"></script>
-<!-- AdminLTE App -->
-<script src="<?php echo base_url(); ?>assets/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="<?php echo base_url(); ?>assets/dist/js/pages/dashboard.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="<?php echo base_url(); ?>assets/dist/js/demo.js"></script>
 <!-- DataTables -->
 <script src="<?php echo base_url(); ?>assets/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="//cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
 <script>
 
 $( document ).ready(function() {
@@ -53,12 +28,14 @@ $( document ).ready(function() {
             var saldoAllAgencias = c[0].saldoTotalAgencias;
             if(saldoAllAgencias != null){
                 $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
+            } else {
+                $("#saldotodaslasAgencias").val('$ 0');
             }
         });
     $("#saldoAgencia").val('');
     $("#tdAgencias").hide();
     $("#saldoAgencia").hide();
-    $('#tabla-clientes').DataTable({
+    var tabla = $('#tabla-clientes').DataTable({
         "language": {
             "lengthMenu": "Mostrando _MENU_ registros",
             "zeroRecords": "No se han encontrado registros",
@@ -98,6 +75,16 @@ $( document ).ready(function() {
         ],
         "order": [[ 0, "asc" ]],
     });
+    var buttons = new $.fn.dataTable.Buttons(tabla, {
+         buttons: [
+           { 
+                extend: 'print', text: 'Imprimir tabla',
+                exportOptions: {
+                    columns: [ 0, 1, 2, 3, 4, 5, 6 ]
+                } 
+            }
+        ]
+    }).container().appendTo($('#divimprimir'));
 });
 
 $(function () {
@@ -117,10 +104,10 @@ $(function () {
                     if(saldoAllAgencias != null){
                         $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
                     } else {
-                        alert('no');
+                        $("#saldotodaslasAgencias").val('$ 0');
                     }
                 });
-            $('#tabla-clientes').DataTable({
+            var tabla = $('#tabla-clientes').DataTable({
                 "language": {
                     "lengthMenu": "Mostrando _MENU_ registros",
                     "zeroRecords": "No se han encontrado registros",
@@ -160,6 +147,16 @@ $(function () {
                 ],
                 "order": [[ 0, "asc" ]],
             });
+            var buttons = new $.fn.dataTable.Buttons(tabla, {
+                 buttons: [
+                   { 
+                        extend: 'print', text: 'Imprimir tabla',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5, 6 ]
+                        } 
+                    }
+                ]
+            }).container().appendTo($('#divimprimir'));
         } else {
             $("#tdTodaslasAgencias").hide();
             $("#saldotodaslasAgencias").hide();
@@ -180,7 +177,7 @@ $(function () {
                     $("#saldoAgencia").val('$ '+0);
                 }
             });
-            $('#tabla-clientes').DataTable({
+            var tabla = $('#tabla-clientes').DataTable({
                 "language": {
                     "lengthMenu": "Mostrando _MENU_ registros",
                     "zeroRecords": "No se han encontrado registros",
@@ -220,6 +217,16 @@ $(function () {
                 ],
                 "order": [[ 0, "asc" ]],
             });
+            var buttons = new $.fn.dataTable.Buttons(tabla, {
+                 buttons: [
+                   { 
+                        extend: 'print', text: 'Imprimir tabla',
+                        exportOptions: {
+                            columns: [ 0, 1, 2, 3, 4, 5, 6 ]
+                        } 
+                    }
+                ]
+            }).container().appendTo($('#divimprimir'));
         }
     });
 
@@ -256,6 +263,14 @@ $(function () {
                     function(data){
                         if (data == 1){
                             $('#tabla-clientes').DataTable().ajax.reload();
+                            $.post('<?php echo base_url(); ?>home/getSaldoTodaslasAgencias',
+                                function(data){
+                                    var c = JSON.parse(data);
+                                    var saldoAllAgencias = c[0].saldoTotalAgencias;
+                                    if(saldoAllAgencias != null){
+                                        $("#saldotodaslasAgencias").val('$ '+saldoAllAgencias);
+                                    }
+                                });
                         }
                     });
                 }
@@ -268,6 +283,8 @@ $(function () {
     $("#apuesta_desde").datepicker({format: 'dd-mm-yyyy'});
     $("#apuesta_hasta").datepicker({format: 'dd-mm-yyyy'});
     $("#fechadeapuesta").datepicker({format: 'dd-mm-yyyy'});
+    $("#editfechadeapuesta").datepicker({format: 'dd-mm-yyyy'});
+    
     $("#add_apuesta").click(function(){
         $("#ingrese").html('');
         var id = $("#idclienteapuestas").val();
@@ -341,7 +358,7 @@ $(function () {
                                         '<button onclick="borrar_apuesta('+item.id_ap+');" style="margin-right: 10px;" type="button" class="btn btn-danger">'+
                                             '<i class="glyphicon glyphicon-trash"></i>'+
                                         '</button>'+
-                                        '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
+                                        '<button onclick="editar_apuesta('+item.id_ap+', \''+fecha+'\', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
                                             '<i class="glyphicon glyphicon-pencil"></i>'+
                                         '</button>'+
                                     '</td>'+
@@ -397,7 +414,7 @@ $(function () {
                                     '<td class="saldo to-print"></td>'+
                                     '<td class="no-print">'+
                                         '<button onclick="borrar_apuesta('+item.id_ap+', '+item.id_apuesta+');" style="margin-right: 10px;" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i></button>'+
-                                        '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-pencil"></i></button>'+
+                                        '<button onclick="editar_apuesta('+item.id_ap+', \''+fecha+'\', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-pencil"></i></button>'+
                                     '</td>'+
                                 '</tr>'
                             );
@@ -422,7 +439,7 @@ $(function () {
                             }
                         });
                     } else {
-                        alert('no hay mas');
+                        alert('no hay registros entre las fechas elegidas');
                     }
                 });
         }
@@ -445,7 +462,7 @@ $(function () {
 
             newWin.document.open();
 
-            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h1 style="text-align: center;">Cliente: '+nombrePrint+'</h1><p style="text-align:center;">Agencia: '+agenciaPrint+'</p><h1 style="text-align: justify;">Consulta de Apuestas desde '+desde+' hasta '+hasta+'</h1>'+divToPrint.innerHTML+'</body></html>');
+            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h1 style="text-align: center;">Cliente: '+nombrePrint+'</h1><p style="text-align:center;">Agencia: '+agenciaPrint+'</p><h2 style="text-align: center;">Apuestas desde '+desde+' hasta '+hasta+'</h2>'+divToPrint.innerHTML+'</body></html>');
 
             newWin.document.close();
 
@@ -461,7 +478,7 @@ $(function () {
 
             newWin.document.open();
 
-            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h1 style="text-align: center;">Cliente: '+nombrePrint+'</h1><p style="text-align:center;">Agencia: '+agenciaPrint+'</p>'+divToPrint.innerHTML+'</body></html>');
+            newWin.document.write('<html><style>.no-print{display:none;} .to-print{text-align: center; border: 1px solid black;}</style><body onload="window.print()"><h2 style="text-align: center;">Cliente: '+nombrePrint+'</h2><p style="text-align:center;">Agencia: '+agenciaPrint+'</p>'+divToPrint.innerHTML+'</body></html>');
 
             newWin.document.close();
 
@@ -506,7 +523,7 @@ $(function () {
                                                 '<button onclick="borrar_apuesta('+item.id_ap+');" style="margin-right: 10px;" type="button" class="btn btn-danger">'+
                                                     '<i class="glyphicon glyphicon-trash"></i>'+
                                                 '</button>'+
-                                                '<button onclick="editar_apuesta('+item.id_ap+', '+item.id_apuesta+', '+fecha+', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
+                                                '<button onclick="editar_apuesta('+item.id_ap+', \''+fecha+'\', '+item.jugo+', '+item.pago+')" type="button" class="btn btn-warning">'+
                                                     '<i class="glyphicon glyphicon-pencil"></i>'+
                                                 '</button>'+
                                             '</td>'+
